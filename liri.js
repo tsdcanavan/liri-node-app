@@ -8,47 +8,60 @@ var request = require("request");
 // set global variables
 var dataArr = [];
 var a = process.argv[2];
+var b = process.argv.splice(3).join(' ');
 
 // log commands to the log file - log.txt
-fs.appendFile('log.txt', process.argv + '\n', function(err){
+fs.appendFile('log.txt', process.argv + '\n', function (err) {
     if (err) {
         console.log(err);
     }
 });
 
-// select the option to run
-switch (a) {
-    case "my-tweets":
-        getTwitter();
-        break;
-    case "spotify-this-song":
-        getSpotify(process.argv.splice(3).join(' '));
-        break;
-    case 'movie-this':
-        getMovie();
-        break;
-    case 'do-what-it-says':
-    // read the input file (getThis()) and then select the option.
-        getThis();
-        setTimeout(function () {
-            switch (dataArr[0]) {
-                case 'my-tweets':
-                    getTwitter();
-                    break;
-                case "spotify-this-song":
-                    getSpotify(dataArr[1]);
-                    break;
-                case 'movie-this':
-                    getMovie();
-                    break;
-                default:
-                    break;
-            }
+// functionalize the switch/case
+if (a === 'do-what-it-says') {
+    getThis();
+    setTimeout(function () {
+        switchCall();
+    }, 100);
+} else {
+    switchCall();
+}
 
-        }, 100);
-        break;
-    default:
-        break;
+function switchCall() {
+    // select the option to run
+    switch (a) {
+        case "my-tweets":
+            getTwitter();
+            break;
+        case "spotify-this-song":
+            getSpotify(b);
+            break;
+        case 'movie-this':
+            getMovie();
+            break;
+        // case 'do-what-it-says':
+        // // read the input file (getThis()) and then select the option.
+        //     getThis();
+        //     setTimeout(function () {
+        //         switch (dataArr[0]) {
+        //             case 'my-tweets':
+        //                 getTwitter();
+        //                 break;
+        //             case "spotify-this-song":
+        //                 getSpotify(dataArr[1]);
+        //                 break;
+        //             case 'movie-this':
+        //                 getMovie();
+        //                 break;
+        //             default:
+        //                 break;
+        //         }
+
+        //     }, 100);
+        //     break;
+        default:
+            break;
+    }
 }
 
 // get twitter results
@@ -63,7 +76,7 @@ function getTwitter() {
     client.get('statuses/user_timeline', params, function (error, tweets, response) {
         if (!error) {
             tweets.forEach(function (element) {
-                fs.appendFile('log.txt', JSON.stringify(element,null,2) + '\n', function(err) {
+                fs.appendFile('log.txt', JSON.stringify(element, null, 2) + '\n', function (err) {
                     if (err) {
                         console.log(err);
                     }
@@ -90,14 +103,14 @@ function getSpotify(dataTrack) {
     if (!dataTrack) {
         var trackName = 'The Sign';
     } else {
-        var trackName = dataTrack;  
+        var trackName = dataTrack;
     }
-    
+
     spotify
         .search({ type: 'track', query: trackName })
         .then(function (response) {
             response.tracks.items.forEach(function (element) {
-                fs.appendFile('log.txt', JSON.stringify(element,null,2) + '\n', function(err) {
+                fs.appendFile('log.txt', JSON.stringify(element, null, 2) + '\n', function (err) {
                     if (err) {
                         console.log(err);
                     }
@@ -129,7 +142,7 @@ function getMovie() {
 
     request(queryUrl, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-            fs.appendFile('log.txt', JSON.stringify(body,null,2) +'\n', function(err) {
+            fs.appendFile('log.txt', JSON.stringify(body, null, 2) + '\n', function (err) {
                 if (err) {
                     console.log(err);
                 }
@@ -165,7 +178,7 @@ function getThis() {
             return console.log(err);
         }
         // log the data read from the file
-        fs.appendFile('log.txt', data + '\n', function(err) {
+        fs.appendFile('log.txt', data + '\n', function (err) {
             if (err) {
                 console.log(err);
             }
@@ -173,5 +186,7 @@ function getThis() {
 
         // convert to an array
         dataArr = data.split(",");
+        a = dataArr[0];
+        b = dataArr[1];
     });
 }
